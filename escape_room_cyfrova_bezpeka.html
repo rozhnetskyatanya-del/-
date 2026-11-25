@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>КОД: Цифрова безпека — Escape Room</title>
+<style>
+:root{--bg:#07182b;--panel:#102c49;--cyan:#65d7ff;--mint:#5ce0b0;--text:#edf7ff;--muted:#b7cce0;--line:#31516d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 5%,#173d60 0,transparent 35%),linear-gradient(145deg,#061426,#0b2340);color:var(--text);font:16px/1.55 system-ui,Segoe UI,sans-serif;min-height:100vh;padding:24px}
+main{max-width:850px;margin:auto}.shell{border:1px solid #31516d;background:#0b2038ed;border-radius:22px;overflow:hidden;box-shadow:0 22px 70px #0007}
+header{padding:28px;background:linear-gradient(120deg,#10365b,#0c2039);text-align:center;border-bottom:1px solid var(--line)}
+.kicker{color:var(--cyan);font-weight:800;letter-spacing:.16em;font-size:.78rem}h1{font-size:clamp(2rem,6vw,3.3rem);line-height:1.08;margin:12px 0}header p{color:var(--muted);max-width:620px;margin:10px auto}
+.progress{display:flex;gap:7px;margin:22px auto 0;max-width:500px}.bar{height:7px;border-radius:9px;background:#38536c;flex:1}.bar.done{background:var(--mint)}
+.content{padding:clamp(18px,4vw,34px)}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.tag{background:#173b5a;color:var(--cyan);padding:5px 11px;border-radius:20px;font-size:.78rem;font-weight:800}
+h2{font-size:clamp(1.5rem,4vw,2.2rem);margin:12px 0}.story{color:var(--muted);font-size:1.05rem}
+.panel{background:#102b47;border:1px solid var(--line);border-radius:15px;padding:18px;margin:20px 0}
+ul{padding-left:24px}li{margin:9px 0}.question{font-weight:750;margin:20px 0 10px}
+input{width:100%;padding:14px 15px;border-radius:11px;border:1px solid #54718b;background:#06182a;color:white;font:inherit;font-size:1rem;outline:none}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #65d7ff22}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:11px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}
+.primary{background:var(--cyan);color:#052039;flex:1}.secondary{background:#1b3a57;color:var(--text);border:1px solid #496984}
+button:disabled{opacity:.45;cursor:not-allowed}.feedback{padding:13px 15px;border-radius:11px;margin-top:14px}.bad{background:#5a351c;color:#ffe0b9}.good{background:#123e38;color:#c8ffeb}
+.hint{background:#123553;border:1px solid #28618b;border-radius:12px;padding:14px;margin-top:14px;color:#d9f1ff}
+.scoreline{display:flex;justify-content:space-between;color:var(--muted);border-top:1px solid var(--line);padding:18px 28px}
+footer{text-align:center;color:#8faac2;font-size:.85rem;padding:0 20px 22px}
+.bigcode{font-size:2.5rem;letter-spacing:.35em;color:var(--mint);font-weight:900;text-align:center}
+@media(max-width:520px){body{padding:10px}.scoreline{padding:15px 18px}.actions button{width:100%}}
+</style>
+</head>
+<body>
+<main><div class="shell">
+<header>
+<div class="kicker">ІНТЕРАКТИВНИЙ ESCAPE ROOM · 5–6 КЛАСИ</div>
+<h1>КОД: ЦИФРОВА БЕЗПЕКА</h1>
+<p>Вірус ГЛІТЧ заблокував цифрову лабораторію. Пройди п’ять випробувань, збери секретний код і врятуй сервер!</p>
+<div class="progress" id="progress"></div>
+</header>
+<section class="content" id="game" aria-live="polite"></section>
+<div class="scoreline"><span>Рахунок команди</span><strong id="score">0 / 15</strong></div>
+<footer>Працюйте командою. Думайте критично. Дбайте про цифрову безпеку!</footer>
+</div></main>
+<script>
+const levels=[
+{title:"Цифровий детектив",tag:"СОРТУВАННЯ",story:"ГЛІТЧ перемішав безпечні та небезпечні дії. Знайди всі безпечні!",items:["1. Не повідомляти нікому свій пароль","2. Відкривати посилання від незнайомців","3. Перевіряти автора та дату публікації","4. Публікувати фото друзів без їхньої згоди","5. Повідомляти дорослим про підозрілі повідомлення"],q:"Введи номери всіх безпечних дій через кому.",ph:"Наприклад: 1, 3, 5",answer:"1,3,5",hint:"Порахуйте дії, які захищають особисті дані та приватність."},
+{title:"Парольний сейф",tag:"ЛОГІЧНА ЗАДАЧА",story:"Сейф заблокований. Обери найнадійніший пароль із запропонованих.",items:["А. 123456","Б. qwerty","В. Limon!47Kava","Г. 11111111"],q:"Введи літеру правильної відповіді.",ph:"Наприклад: В",answer:"в",hint:"Надійний пароль містить різні типи символів і його важко вгадати."},
+{title:"Полювання на фейки",tag:"АНАЛІЗ ІНФОРМАЦІЇ",story:"Вірус залишив чотири повідомлення. Знайди два підозрілі.",items:["1. Олімпіада завтра. Інформація на сайті школи.","2. Надішли допис десятьом друзям, інакше комп’ютер заблокується!","3. Ти виграв смартфон! Перейди за посиланням і введи особисті дані.","4. У бібліотеці відкрилася виставка. Є повідомлення на її офіційній сторінці."],q:"Введи номери двох підозрілих повідомлень.",ph:"Наприклад: 2, 3",answer:"2,3",hint:"Зверни увагу на залякування, терміновість, подарунки та вимогу особистих даних."},
+{title:"Мережевий етикет",tag:"ПРАВИЛА СПІЛКУВАННЯ",story:"Віднови правила ввічливого та безпечного спілкування в мережі.",items:["1. Писати повідомлення ввічливо.","2. Ображати співрозмовника.","3. Поважати чужу думку.","4. Писати всі повідомлення ВЕЛИКИМИ ЛІТЕРАМИ.","5. Не поширювати чужі фотографії без дозволу.","6. Не публікувати особисті дані інших людей."],q:"Введи номери всіх правильних тверджень.",ph:"Наприклад: 1, 3, 5, 6",answer:"1,3,5,6",hint:"Правильні правила передбачають повагу, ввічливість і захист приватності."},
+{title:"Файловий лабіринт",tag:"КЛАСИФІКАЦІЯ",story:"Допоможи серверу розпізнати файли із зображеннями.",items:[".docx — текстовий документ",".jpg — ?",".mp3 — аудіофайл",".png — ?",".txt — текстовий файл",".mp4 — відеофайл"],q:"Введи два розширення зображень через кому.",ph:"Наприклад: jpg, png",answer:"jpg,png",hint:"Зображення можуть мати розширення JPG та PNG."}
+];
+let current=0,score=0,usedHint=false;
+const game=document.getElementById('game'),progress=document.getElementById('progress'),scoreEl=document.getElementById('score');
+function norm(s){return s.toLowerCase().replace(/[.;\s]+/g,',').replace(/^,|,$/g,'').split(',').filter(Boolean).sort().join(',')}
+function drawProgress(){progress.innerHTML=levels.map((_,i)=>`<div class="bar ${i<current?'done':''}"></div>`).join('')}
+function render(){
+ drawProgress();scoreEl.textContent=score+' / 15';
+ if(current>=levels.length){game.innerHTML=`<div class="tag">МІСІЮ ВИКОНАНО</div><h2>Вітаємо, команда цифрової безпеки!</h2><p class="story">Ви пройшли всі п’ять випробувань і відновили роботу цифрової лабораторії.</p><div class="panel"><div class="question">СЕКРЕТНИЙ КОД</div><div class="bigcode">33242</div><p style="text-align:center">Набрано балів: <b>${score} / 15</b></p><p style="text-align:center;color:var(--mint)">Ви — майстри цифрової грамотності!</p></div><button class="primary" onclick="restart()">Пройти гру ще раз</button>`;return}
+ const l=levels[current];
+ game.innerHTML=`<div class="topline"><span class="tag">ВИПРОБУВАННЯ ${current+1} / 5</span><span class="tag">${l.tag}</span></div><h2>${l.title}</h2><p class="story">${l.story}</p><div class="panel"><b>Матеріали випробування</b><ul>${l.items.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="question">${l.q}</div><input id="answer" autocomplete="off" placeholder="${l.ph}" aria-label="Ваша відповідь"><div class="actions"><button class="primary" onclick="check()">Перевірити відповідь</button><button class="secondary" onclick="showHint()" ${usedHint?'disabled':''}>Підказка</button></div><div id="feedback"></div><div id="hint"></div>`;
+ document.getElementById('answer').addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+}
+function check(){
+ const input=document.getElementById('answer');const f=document.getElementById('feedback');
+ if(!input.value.trim()){f.innerHTML='<div class="feedback bad">Спочатку введи відповідь.</div>';return}
+ const l=levels[current],v=current===1?input.value.trim().toLowerCase():norm(input.value);
+ if(v===l.answer){score+=usedHint?2:3;f.innerHTML='<div class="feedback good">Правильно! Випробування пройдено. Відкривається наступний рівень…</div>';scoreEl.textContent=score+' / 15';setTimeout(()=>{current++;usedHint=false;render()},900)}
+ else{f.innerHTML='<div class="feedback bad">Поки що не вийшло. Перевір відповідь і спробуй ще раз.</div>'}
+}
+function showHint(){if(usedHint)return;usedHint=true;document.getElementById('hint').innerHTML=`<div class="hint"><b>ПІДКАЗКА ВІД СИСТЕМИ</b><br>${levels[current].hint}</div>`;document.querySelector('.secondary').disabled=true}
+function restart(){current=0;score=0;usedHint=false;render()}
+render();
+</script>
+</body></html>
